@@ -4,7 +4,7 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import math
 import numpy as np
-
+import subprocess
 
 def distance (n, percent):
     # freq is a float number in MHz
@@ -104,13 +104,47 @@ def trilateration(P1, P2, P3, r1, r2, r3):
   K2 = P1 + X * Xn + Y * Yn + Z2 * Zn
   return K1,K2
 
-# Example usage
-p1 = (0, 0, 0)  # Coordinates of the first point
-p2 = (3, 0, 0)  # Coordinates of the second point
-p3 = (0, 4, 0)  # Coordinates of the third point
-d1 = distance(0, 81)  # Distance from the first point to the target point
-d2 = distance(0, 92)  # Distance from the second point to the target point
-d3 = distance(0, 73)  # Distance from the third point to the target point
+
+command = "netsh wlan show networks mode=bssid"
+ipconfig = subprocess.Popen(command, stdout=subprocess.PIPE)
+ssid1 = 'drewphone'
+ssid2 = 'dotingapple'
+ssid3 = 'iPhone13'
+ssid4 = 'bunger'
+bssid = 'BSSID'
+signal = b'Signal'
+channel = b'Channel'
+ssids = [dict() for x in range(4)]
+
+
+command = "netsh wlan show networks mode=bssid"
+ipconfig = subprocess.getoutput(command)
+splitoutput = ipconfig.splitlines()
+count = 0
+for i in range(len(splitoutput)):
+    if (ssid1 in splitoutput[i]) or (ssid2 in splitoutput[i]) or (ssid3 in splitoutput[i]) or (ssid4 in splitoutput[i]):
+        ssids[count]["SSID"] = splitoutput[i].split()[3]
+        ssids[count]["Signal"] = splitoutput[i + 5].split()[2]
+        ssids[count]["Channel"] = splitoutput[i + 7].split()[2]
+        count+=1
+
+
+
+print(ssids[0])
+print(ssids[1])
+print(ssids[2])
+print(ssids[3])
+
+per0 = int(ssids[0]["Signal"].rstrip('%'))
+per1 = int(ssids[1]["Signal"].rstrip('%'))
+per2 = int(ssids[2]["Signal"].rstrip('%'))
+
+p1 = (0, 0, 1)  # Coordinates of the first point
+p2 = (5, 0, 0)  # Coordinates of the second point
+p3 = (0, 10, 0)  # Coordinates of the third point
+d1 = distance(0, per0)  # Distance from the first point to the target point
+d2 = distance(0, per1)  # Distance from the second point to the target point
+d3 = distance(0, per2)  # Distance from the third point to the target point
 
 x, y= trilateration(p1, p2, p3, d1, d2, d3)
 print("Computed Coordinates (x, y):", (x, y))
