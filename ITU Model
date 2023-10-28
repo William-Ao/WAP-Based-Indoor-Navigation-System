@@ -134,14 +134,29 @@ print(ssids[0])
 print(ssids[1])
 print(ssids[2])
 print(ssids[3])
+per0 = 0
+per1 = 0
+per2 = 0
 
-per0 = int(ssids[0]["Signal"].rstrip('%'))
-per1 = int(ssids[1]["Signal"].rstrip('%'))
-per2 = int(ssids[2]["Signal"].rstrip('%'))
+for dict in ssids:
+    for key in dict:
+        if key == "SSID":
+            if dict["SSID"] == 'drewphone':
+                per0 = int(dict["Signal"].rstrip('%'))
 
-p1 = (0, 0, 1)  # Coordinates of the first point
-p2 = (5, 0, 0)  # Coordinates of the second point
-p3 = (0, 10, 0)  # Coordinates of the third point
+            if dict["SSID"] == 'dotingapple':
+                per1 = int(dict["Signal"].rstrip('%'))
+
+            if dict["SSID"] == 'iPhone13':
+                per2 = int(dict["Signal"].rstrip('%'))
+
+
+print(per0)
+print(per1)
+print(per2)
+p1 = (0, 0, 0)  # Coordinates of the first point drewphone
+p2 = (17, 0, 0)  # Coordinates of the second point dotingapple
+p3 = (20, 6.4, 0)  # Coordinates of the third point iPhone13
 d1 = distance(0, per0)  # Distance from the first point to the target point
 d2 = distance(0, per1)  # Distance from the second point to the target point
 d3 = distance(0, per2)  # Distance from the third point to the target point
