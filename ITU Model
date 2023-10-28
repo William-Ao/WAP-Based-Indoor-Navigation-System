@@ -7,10 +7,10 @@ import math
 def pathLoss (freq, n, s_power, d_power):
     # freq is a float number in MHz
     # n is the floor number, 1<= n <=3
-    # s_power is the source power
-    # d_power is received device power
-    # dis is the distance in meter
-    loss = 10*math.log10(s_power/d_power)
+    # s_power is the source power in dbm
+    # d_power is received device power in dbm
+    # dis is the distance in meters
+    loss = s_power - d_power
     p_loss = p_loss_coef(freq/(10**3))
     f_loss = floor_loss_coef(freq/(10**3), n)
 
