@@ -7,7 +7,7 @@ import math
 
 def pathLoss (freq, n, dis):
     # freq is a float number
-    # n is an integer, 1<= n <=3
+    # n is the number of floors, 1<= n <=3
     # dis is the distance in meter
     tot = 0.0
     p_loss = p_loss_coef(freq)
