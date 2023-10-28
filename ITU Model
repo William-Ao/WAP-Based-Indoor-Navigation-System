@@ -5,12 +5,14 @@
 import math
 
 
-def pathLoss (freq, p_loss, dis, f_loss):
+def pathLoss (freq, n, dis):
     # freq is a float number
-    # p_loss is power loss coefficient
+    # n is an integer, 1<= n <=3
     # dis is the distance in meter
-    # f_loss is floor loss coefficient
     tot = 0.0
+    p_loss = p_loss_coef(freq)
+    f_loss = floor_loss_coef(freq, n)
+    
     tot += 20 * math.log10(freq)
     tot += p_loss * math.log10(dis)
     tot += f_loss
@@ -20,6 +22,7 @@ def pathLoss (freq, p_loss, dis, f_loss):
 
 def p_loss_coef (freq):
     # freq is a float number
+    # return an integer
     coef = 0
     if (freq == 0.9):
         coef = 33
