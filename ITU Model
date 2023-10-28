@@ -4,21 +4,22 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import math
 
-
-def pathLoss (freq, n, dis):
-    # freq is a float number
-    # n is the number of floors, 1<= n <=3
+def pathLoss (freq, n, s_power, d_power):
+    # freq is a float number in MHz
+    # n is the floor number, 1<= n <=3
+    # s_power is the source power
+    # d_power is received device power
     # dis is the distance in meter
-    tot = 0.0
-    p_loss = p_loss_coef(freq)
-    f_loss = floor_loss_coef(freq, n)
-    
-    tot += 20 * math.log10(freq)
-    tot += p_loss * math.log10(dis)
-    tot += f_loss
-    tot -= 28
+    loss = 10*math.log10(s_power/d_power)
+    p_loss = p_loss_coef(freq/(10**3))
+    f_loss = floor_loss_coef(freq/(10**3), n)
 
-    return tot
+    loss += 28
+    loss -= f_loss
+    loss -= 20 * math.log10(freq)
+    dis = 10**(loss/p_loss)
+
+    return dis
 
 def p_loss_coef (freq):
     # freq is a float number
