@@ -6,26 +6,60 @@ import math
 import numpy as np
 import subprocess
 
-def distance (n, percent):
+def distance (percent):
     # freq is a float number in MHz
     # n is the floor number, 1<= n <=3
     # percent is the device received signal strength
     # s_power is the source power in dbm
     # d_power is received device power in dbm
     # dis is the distance in meter
-    freq = 5200.0 # in MHz
-    s_power = -30
-    d_power = (percent/2) - 100
-    loss = s_power - d_power
-    p_loss = p_loss_coef(freq/10**3)
-    f_loss = floor_loss_coef(freq/10**3, n)
+    # n_p is path loss factor ranging from 2 to 4
 
-    loss += 28
-    loss -= f_loss
-    loss -= 20 * math.log10(freq)
-    dis = 10**(loss/p_loss)
+    #freq = 5200.0 # in MHz
+    n_p = 4
+    d_power = (percent / 2) - 100
+    dis = math.pow(10, ((-57.4-d_power)/n_p))
 
     return dis
+
+def estimate_distance(percent, params=None):
+    """This function returns an estimated distance range
+       given a single radio signal strength (RSS) reading
+       (received power measurement) in dBm.
+
+
+    Parameters:
+        power_received (float): RSS reading in dBm
+        params (4-tuple float): (d_ref, power_ref, path_loss_exp, stdev_power)
+            d_ref is the reference distance in m
+            power_ref is the received power at the reference distance
+            path_loss_exp is the path loss exponent
+            stdev_power is standard deviation of received Power in dB
+
+    Returns:
+        (d_est, d_min, d_max): a 3-tuple of float values containing
+            the estimated distance, as well as the minimum and maximum
+            distance estimates corresponding to the uncertainty in RSS,
+            respectively, in meters rounded to two decimal points
+    """
+    power_received = (percent/ 2) - 100
+    if params is None:
+        params = (1.0, -53.0, 2.0, 2.5)
+          # the above values are arbitrarily chosen "default values"
+          # should be changed based on measurements
+
+    d_ref = params[0] # reference distance
+    power_ref = params[1] # mean received power at reference distance
+    path_loss_exp = params[2] # path loss exponent
+    stdev_power = params[3] # standard deviation of received power
+
+    uncertainty = 2*stdev_power # uncertainty in RSS corresponding to 95.45% confidence
+
+    d_est = d_ref*(10**(-(power_received - power_ref)/(10*path_loss_exp)))
+    d_min = d_ref*(10**(-(power_received - power_ref + uncertainty)/(10*path_loss_exp)))
+    d_max = d_ref*(10**(-(power_received - power_ref - uncertainty)/(10*path_loss_exp)))
+
+    return np.round(d_est,2)
 
 def p_loss_coef (freq):
     # freq is a float number
@@ -101,8 +135,8 @@ def trilateration(P1, P2, P3, r1, r2, r3):
   Z2 = -Z1
 
   K1 = P1 + X * Xn + Y * Yn + Z1 * Zn
-  K2 = P1 + X * Xn + Y * Yn + Z2 * Zn
-  return K1,K2
+  #K2 = P1 + X * Xn + Y * Yn + Z2 * Zn
+  return K1
 
 
 command = "netsh wlan show networks mode=bssid"
@@ -155,11 +189,14 @@ print(per0)
 print(per1)
 print(per2)
 p1 = (0, 0, 0)  # Coordinates of the first point drewphone
-p2 = (17, 0, 0)  # Coordinates of the second point dotingapple
-p3 = (20, 6.4, 0)  # Coordinates of the third point iPhone13
-d1 = distance(0, per0)  # Distance from the first point to the target point
-d2 = distance(0, per1)  # Distance from the second point to the target point
-d3 = distance(0, per2)  # Distance from the third point to the target point
+p2 = (6, 0, 0)  # Coordinates of the second point dotingapple
+p3 = (0, 5.4, 0)  # Coordinates of the third point iPhone13
+d1 = estimate_distance(per0)  # Distance from the first point to the target point
+d2 = estimate_distance(per1)  # Distance from the second point to the target point
+d3 = estimate_distance(per2)  # Distance from the third point to the target point
+print(d1)
+print(d2)
+print(d3)
 
-x, y= trilateration(p1, p2, p3, d1, d2, d3)
-print("Computed Coordinates (x, y):", (x, y))
+x= trilateration(p1, p2, p3, d1, d2, d3)
+print("Computed Coordinates (x, y, z):", (x))
